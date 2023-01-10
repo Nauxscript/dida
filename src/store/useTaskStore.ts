@@ -14,6 +14,12 @@ export const useTaskStore = defineStore('task', () => {
     })
   })
 
+  const treeProjectChildren = projectNames.value.map((projectName, index) => ({
+    key: 100 + index + 1,
+    label: projectName,
+    isLeaf: true,
+  }))
+
   function addTask(title: string) {
     const task = taskService.createTask(title)
     taskService.addTask(task, currentActiveProject.value!)
@@ -49,7 +55,7 @@ export const useTaskStore = defineStore('task', () => {
     currentActiveProject,
     projectNames,
     currentActiveTask,
-
+    treeProjectChildren,
     addTask,
     removeTask,
     completeTask,
