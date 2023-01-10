@@ -25,8 +25,8 @@ function addTask() {
   taskTitle.value = ''
 }
 
-function troggleLeftMenu() {
-  taskLeftMenuStatusStore.troggle()
+function toggleLeftMenu() {
+  taskLeftMenuStatusStore.toggle()
 }
 
 const shouldShowTodoAdd = computed(() => {
@@ -45,7 +45,7 @@ const { inputRef, onFocus } = useTaskListInput()
 <template>
   <div class="flex flex-col gap-20px px-4 text-16px">
     <div flex items-center>
-      <Icon :icon="taskLeftMenuStatusStore.visible ? 'tabler:layout-sidebar-left-collapse' : 'tabler:layout-sidebar-right-collapse'" width="30" @click="troggleLeftMenu()" />
+      <Icon :icon="taskLeftMenuStatusStore.visible ? 'tabler:layout-sidebar-left-collapse' : 'tabler:layout-sidebar-right-collapse'" width="30" @click="toggleLeftMenu()" />
       <h1 class="text-4xl ml-5px">
         {{ taskStore.currentActiveProject?.name }}
       </h1>
