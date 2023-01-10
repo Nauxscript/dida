@@ -36,8 +36,10 @@ const data = ref<any[]>([
 const nodeProps = ({ option }: { option: TreeOption }) => {
   return {
     onClick() {
-      const projectName = option.label
-      projectName && taskStore.changeCurrentActiveProject(projectName)
+      if (treeOption.option.key === 100)
+        return
+      const projectName = treeOption.option.label
+      taskStore.changeCurrentActiveProject(projectName)
     },
     class: option.placeholder ? 'placeholder' : '',
   }
