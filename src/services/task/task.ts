@@ -8,6 +8,11 @@ export enum TaskState {
   REMOVED = 4,
 }
 
+export enum TreeRootKeys {
+  PROJECT = 100,
+  TAG = 200,
+}
+
 export interface Task {
   id: string
   title: string

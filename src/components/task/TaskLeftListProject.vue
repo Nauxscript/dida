@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import type { TreeOption } from 'naive-ui'
 import { NTree } from 'naive-ui'
-import { onMounted, ref, watchEffect } from 'vue'
+import { Icon } from '@iconify/vue'
+import { h, onMounted, ref, watchEffect } from 'vue'
+import TagCreateView from './TagCreateView.vue'
 import { useProjectSelectedStatusStore, useTaskStore } from '@/store'
 import 'vue3-emoji-picker/css'
 import ProjectCreateView from '@/components/task/ProjectCreatedView.vue'
-
-enum TreeRootKeys {
-  PROJECT = 100,
-  TAG = 200,
-}
+import { TreeRootKeys } from '@/services/task/task'
 
 const { projectViewRef, projectRender } = useCreateProjectButton()
 
@@ -26,11 +24,36 @@ function useCreateProjectButton() {
 
 const projectSelectedStatusStore = useProjectSelectedStatusStore()
 const taskStore = useTaskStore()
+const createTagVisible = ref(false)
 
 // fake data to simulate tags render
-const fakeTagsNamesData = ref<string[]>([])
+const fakeTagsNamesData = ref<TreeOption[]>([{
+  label: 'tag 1',
+  color: '#2b9fda',
+  isLeaf: true,
+  prefix: () => h(Icon, {
+    icon: 'carbon:tag',
+    width: '18',
+  }),
+  suffix: () => h('div', { class: 'flex flex-row items-center' },
+    [
+      h(Icon, {
+        icon: 'carbon:circle-solid',
+        width: '6',
+        color: '#2b9fda',
+        class: 'mx-2',
+      }),
+      h(Icon, {
+        icon: 'mdi:dots-horizontal',
+        width: '20',
+      }),
+    ],
+  ),
+
+}])
 const defaultExpandedKeys = ref<TreeRootKeys[]>([])
 const treeProjectChildren = ref<TreeOption[]>([])
+const treeTagChildren = ref<TreeOption[]>([])
 
 watchEffect(() => {
   treeProjectChildren.value = taskStore.projectNames.map((projectname, index) => ({
@@ -38,9 +61,33 @@ watchEffect(() => {
     label: projectname,
     isleaf: true,
   }))
+  treeTagChildren.value = taskStore.tagsData.map((tag, index) => ({
+    key: TreeRootKeys.PROJECT + index + 1,
+    label: tag.name,
+    color: tag.color,
+    prefix: () => h(Icon, {
+      icon: 'carbon:tag',
+      width: '18',
+    }),
+    suffix: () => h('div', { class: 'flex flex-row items-center' },
+      [
+        h(Icon, {
+          icon: 'carbon:circle-solid',
+          width: '6',
+          color: '#2b9fda',
+          class: 'mx-2',
+        }),
+        h(Icon, {
+          icon: 'mdi:dots-horizontal',
+          width: '20',
+        }),
+      ],
+    ),
+    isleaf: true,
+  }))
   defaultExpandedKeys.value = [...new Set([
     ...(taskStore.projectNames.length ? [] : [TreeRootKeys.PROJECT]),
-    ...(fakeTagsNamesData.value.length ? [] : [TreeRootKeys.TAG]),
+    ...(treeTagChildren.value.length ? [] : [TreeRootKeys.TAG]),
     ...projectSelectedStatusStore.listDefaultSelectedKey,
   ])]
 })
@@ -58,21 +105,38 @@ const data = ref<any[]>([
     label: '标签',
     checkboxDisabled: false,
     isLeaf: false,
-    children: fakeTagsNamesData.value.length
-      ? fakeTagsNamesData.value
+    children: treeTagChildren.value.length
+      ? treeTagChildren.value
       : [{
           label: '以标签的维度展示不同清单的任务。在添加任务时输入“#”可快速选择标签',
           placeholder: true,
         }],
+    suffix: () => h(Icon, {
+      icon: 'ic:baseline-plus',
+      width: '20',
+      class: 'invisible rounded-1 hover:bg-gray-2',
+      onclick(e: Event) {
+        createTagVisible.value = true
+        e.stopPropagation()
+      },
+    }),
   },
 ])
+
 const nodeProps = ({ option }: { option: TreeOption }) => {
   return {
     onClick() {
       if (option.key === TreeRootKeys.PROJECT || option.key === TreeRootKeys.TAG)
         return
-      const projectName = option.label
-      projectName && taskStore.changeCurrentActiveProject(projectName)
+      const nodeName = option.label
+      if (!nodeName || !option.key)
+        return
+      // tag children
+      if (option.key < 200)
+        return taskStore.changeCurrentActiveArchive(TreeRootKeys.TAG, nodeName)
+
+      // project children
+      taskStore.changeCurrentActiveArchive(TreeRootKeys.PROJECT, nodeName)
     },
     class: option.placeholder ? 'placeholder' : '',
   }
@@ -95,7 +159,6 @@ const onExpandedKey = (key: number[]) => {
   <NTree
     v-model:selected-keys="projectSelectedStatusStore.selectedKey"
     :default-expanded-keys="defaultExpandedKeys"
-    :render-suffix="projectRender"
     block-line
     expand-on-click
     :data="data"
@@ -104,6 +167,7 @@ const onExpandedKey = (key: number[]) => {
     @update:selected-keys="changeSelectedKey"
   />
   <ProjectCreateView ref="projectViewRef" />
+  <TagCreateView v-model:show="createTagVisible" />
 </template>
 
 <style>
@@ -141,5 +205,9 @@ const onExpandedKey = (key: number[]) => {
 
 .dark .placeholder .n-tree-node-content__text {
   color: rgba(156,163,175,0.5);
+}
+
+.n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled):hover .iconify  {
+  visibility: visible;
 }
 </style>

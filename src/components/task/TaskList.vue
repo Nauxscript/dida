@@ -32,7 +32,7 @@ const taskTitle = ref('')
 const dragging = ref<boolean>(false)
 
 const placeholderText = computed(() => {
-  return `添加任务至“${taskStore.currentActiveProject?.name}”，回车即可保存`
+  return `添加任务至“${taskStore.currentActiveArchive?.name}”，回车即可保存`
 })
 const isPlaceholder = computed(() => {
   return taskTitle.value.length === 0
@@ -54,7 +54,7 @@ function handleInputChange(event: any) {
 }
 
 const shouldShowTodoAdd = computed(() => {
-  const name = taskStore.currentActiveProject?.name
+  const name = taskStore.currentActiveArchive?.name
   return (
     name !== (SmartProjectNames.Complete as string)
     && name !== SmartProjectNames.Trash
@@ -79,7 +79,7 @@ const { inputRef, onFocus } = useInput()
         @click="toggleLeftMenu()"
       />
       <h1 class="text-4xl ml-5px">
-        {{ taskStore.currentActiveProject?.name }}
+        {{ taskStore.currentActiveArchive?.name }}
       </h1>
     </div>
     <div
@@ -108,7 +108,7 @@ const { inputRef, onFocus } = useInput()
       </div>
     </div>
     <draggable
-      :list="taskStore.currentActiveProject?.tasks ?? []"
+      :list="taskStore.currentActiveArchive?.tasks ?? []"
       :ghost-class="themeStore.isDark ? 'dark-ghost' : 'ghost'"
       :drag-class="themeStore.isDark ? 'dark-drag' : 'drag'"
       item-key="id"

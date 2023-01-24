@@ -70,4 +70,25 @@ export const fetchData = {
       },
     ],
   },
+  tags: [
+    {
+      name: '标签1',
+      color: '#b1dd22',
+      id: crypto.randomUUID(),
+      tasks: [
+        {
+          title: '芜湖',
+          content: '## 支持标签了！ \n 快试试',
+          state: 1,
+          id: crypto.randomUUID(),
+        },
+        {
+          title: 'yohoo',
+          content: '## 另外一个标签！ \n 开搞',
+          state: 1,
+          id: crypto.randomUUID(),
+        },
+      ],
+    },
+  ],
 }

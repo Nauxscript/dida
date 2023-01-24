@@ -1,12 +1,17 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
+// import { TreeRootKeys } from '../services/task'
 import type { Project, Task } from '../services/task'
+import { TreeRootKeys } from '../services/task'
 import * as taskService from '../services/task'
+import type { Tag } from '@/services/task/tag'
 
 export const useTaskStore = defineStore('task', () => {
   const projects = reactive(taskService.projects)
+  const tags = reactive(taskService.tags)
   const currentActiveTask = ref<Task>()
-  const currentActiveProject = ref<Project | undefined>(projects[0])
+  // const currentActiveProject = ref<Project | undefined>(projects[0])
+  const currentActiveArchive = ref<Project | Tag | undefined>(projects[0])
 
   const projectNames = computed(() => {
     return projects.map((project) => {
@@ -14,9 +19,16 @@ export const useTaskStore = defineStore('task', () => {
     })
   })
 
+  const tagsData = computed(() => {
+    return tags.map(({ name, color }) => ({
+      name,
+      color,
+    }))
+  })
+
   function addTask(title: string) {
     const task = taskService.createTask(title)
-    taskService.addTask(task, currentActiveProject.value!)
+    taskService.addTask(task, currentActiveArchive.value!)
     changeActiveTask(task)
   }
 
@@ -35,7 +47,16 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   function changeCurrentActiveProject(projectName: string) {
-    currentActiveProject.value = taskService.findProjectByName(projectName)
+    currentActiveArchive.value = taskService.findProjectByName(projectName)
+    changeActiveTask(undefined)
+  }
+
+  function changeCurrentActiveArchive(parentKey: TreeRootKeys, name: string) {
+    if (parentKey === TreeRootKeys.PROJECT)
+      currentActiveArchive.value = taskService.findProjectByName(name)
+    if (parentKey === TreeRootKeys.TAG)
+      currentActiveArchive.value = taskService.findTagByName(name)
+
     changeActiveTask(undefined)
   }
 
@@ -46,7 +67,8 @@ export const useTaskStore = defineStore('task', () => {
 
   return {
     projects,
-    currentActiveProject,
+    tagsData,
+    currentActiveArchive,
     projectNames,
     currentActiveTask,
     addTask,
@@ -55,5 +77,6 @@ export const useTaskStore = defineStore('task', () => {
     restoreTask,
     changeActiveTask,
     changeCurrentActiveProject,
+    changeCurrentActiveArchive,
   }
 })
